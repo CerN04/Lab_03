@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Array.hpp"
+
 #include "Figure.hpp"
 
 class Octagon : public Figure {
@@ -18,5 +19,5 @@ public:
     ~Octagon();
 
 private:
-    Array<Point> points;
+    Array points;
 };

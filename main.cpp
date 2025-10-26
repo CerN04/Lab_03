@@ -13,12 +13,12 @@
 int main() {
     try {
         std::cout << "Welcome to Lab3OOPFigureWorkerProgramm_V1!" << std::endl;
-        Array<Figure *> spis;
+        ArrayF spis;
         int choice = 0;
         std::cout << "Select an action: " << std::endl;
         std::cout << "Choose an option:\n0. Exit\n1. Add pentagon\n2. Add hexagon\n3. Add oktagon\n4. Print all figures\n5. "
-                    "Print total arrea\n6. Delete figure\n7. Menu"
-                << std::endl;
+                     "Print total arrea\n6. Delete figure\n7. Menu"
+                  << std::endl;
         std::cin >> choice;
         while (choice != 0) {
             switch (choice) {
@@ -79,8 +79,8 @@ int main() {
             }
             case 7: {
                 std::cout << "Choose an option:\n0. Exit\n1. Add pentagon\n2. Add hexagon\n3. Add oktagon\n4. Print all "
-                            "figures\n5. Print total arrea\n6. Delete figure\n7. Menu"
-                        << std::endl;
+                             "figures\n5. Print total arrea\n6. Delete figure\n7. Menu"
+                          << std::endl;
                 break;
             }
             }

@@ -1,47 +1,57 @@
 #pragma once
 
+#include"Figure.hpp"
+
 #include <stdexcept>
 
-template <typename T> class Array {
+class Array {
 private:
     size_t size;
-    T *data;
+    Point *data;
     size_t capacity;
 
 public:
     Array();
-    Array(const size_t &n, T t = T{});
-    Array(const std::initializer_list<T> &t);
+    Array(const size_t &n, Point t = Point{});
+    Array(const std::initializer_list<Point> &t);
 
     Array(const Array &other);
     Array(Array &&other) noexcept;
     ~Array() noexcept;
 
     void Resize(size_t new_size);
-    T GetItem(size_t i) const;
-    T &GetItemRef(size_t i);
-    void SetItem(size_t index, T value);
+    Point GetItem(size_t i) const;
+    Point &GetItemRef(size_t i);
+    void SetItem(size_t index, Point value);
     void DeleteItem(size_t index);
-    void PushItem(T t);
+    void PushItem(Point t);
     void PopItem();
-    T Back() const;
+    Point Back() const;
     size_t GetSize() const;
 };
 
-template <typename T> class Array<T *> {
+class ArrayF {
 private:
     size_t size;
-    T **data;
+    Figure **data;
     size_t capacity;
 
 public:
-    Array();
-    Array(const size_t &n, T *t = nullptr);
-    ~Array() noexcept;
+    ArrayF();
+    ArrayF(const size_t &n, Figure *t = nullptr);
+    ArrayF(const ArrayF &other);
+    ArrayF(ArrayF &&other) noexcept;
+    ~ArrayF() noexcept;
 
-    T *GetItem(size_t i) const;
-    void SetItem(size_t index, T *value);
+    ArrayF &operator=(const ArrayF &other);
+    ArrayF &operator=(ArrayF &&other) noexcept;
+
+    void Resize(size_t new_size);
+    Figure *GetItem(size_t i) const;
+    void SetItem(size_t index, Figure *value);
     void DeleteItem(size_t index);
-    void PushItem(T *t);
+    void PushItem(Figure *t);
+    void PopItem();
+    Figure *Back() const;
     size_t GetSize() const;
 };

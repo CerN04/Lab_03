@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Array.hpp"
+
 #include "Figure.hpp"
 
 
@@ -19,5 +20,5 @@ public:
     ~Pentagon();
 
 private:
-    Array<Point> points;
+    Array points;
 };

@@ -4,17 +4,17 @@
 
 #include "Figure.hpp"
 
-template <typename T> Array<T *>::Array() : size(0), data(nullptr), capacity(0) {}
+ArrayF::ArrayF() : size(0), data(nullptr), capacity(0) {}
 
-template <typename T> Array<T *>::~Array() noexcept {
+ArrayF::~ArrayF() noexcept {
     for (size_t i = 0; i < size; ++i) {
         delete data[i];
     }
     delete[] data;
 }
 
-template <typename T> Array<T *>::Array(const size_t &n, T *t) : size(n), capacity(n) {
-    data = new T *[capacity];
+ArrayF::ArrayF(const size_t &n, Figure *t) : size(n), capacity(n) {
+    data = new Figure *[capacity];
     for (size_t i = 0; i < size; ++i) {
         if (t != nullptr) {
             data[i] = t->clone();
@@ -24,14 +24,91 @@ template <typename T> Array<T *>::Array(const size_t &n, T *t) : size(n), capaci
     }
 }
 
-template <typename T> T *Array<T *>::GetItem(size_t i) const {
+
+
+ArrayF::ArrayF(const ArrayF &other) : size(other.size), capacity(other.capacity) {
+    data = new Figure *[capacity];
+    for (size_t i = 0; i < size; ++i) {
+        data[i] = other.data[i]->clone();
+    }
+}
+
+ArrayF::ArrayF(ArrayF &&other) noexcept : size(other.size), data(other.data), capacity(other.capacity) {
+    other.size = 0;
+    other.data = nullptr;
+    other.capacity = 0;
+}
+
+ArrayF &ArrayF::operator=(const ArrayF &other) {
+    if (this == &other) {
+        return *this;
+    }
+    for (size_t i = 0; i < size; ++i) {
+        delete data[i];
+    }
+    delete[] data;
+
+    size = other.size;
+    capacity = other.capacity;
+    data = new Figure *[capacity];
+    for (size_t i = 0; i < size; ++i) {
+        data[i] = other.data[i]->clone();
+    }
+    return *this;
+}
+
+ArrayF &ArrayF::operator=(ArrayF &&other) noexcept {
+    if (this == &other) {
+        return *this;
+    }
+    for (size_t i = 0; i < size; ++i) {
+        delete data[i];
+    }
+    delete[] data;
+
+    size = other.size;
+    capacity = other.capacity;
+    data = other.data;
+
+    other.size = 0;
+    other.data = nullptr;
+    other.capacity = 0;
+    return *this;
+}
+
+void ArrayF::Resize(size_t new_size) {
+    if (new_size == size) {
+        return;
+    }
+    if (new_size > capacity) {
+        size_t new_capacity = std::max(new_size, capacity * 2);
+        Figure **new_data = new Figure *[new_capacity];
+        for (size_t i = 0; i < size; ++i) {
+            new_data[i] = data[i];
+        }
+        for (size_t i = size; i < new_capacity; ++i) {
+            new_data[i] = nullptr;
+        }
+        delete[] data;
+        data = new_data;
+        capacity = new_capacity;
+    }
+    if (new_size < size) {
+        for (size_t i = new_size; i < size; ++i) {
+            delete data[i];
+        }
+    }
+    size = new_size;
+}
+
+Figure *ArrayF::GetItem(size_t i) const {
     if (i >= size) {
         throw std::out_of_range("Index out of range");
     }
     return data[i];
 }
 
-template <typename T> void Array<T *>::SetItem(size_t index, T *value) {
+void ArrayF::SetItem(size_t index, Figure *value) {
     if (index >= size) {
         throw std::out_of_range("Index out of range");
     }
@@ -39,7 +116,7 @@ template <typename T> void Array<T *>::SetItem(size_t index, T *value) {
     data[index] = value;
 }
 
-template <typename T> void Array<T *>::DeleteItem(size_t index) {
+void ArrayF::DeleteItem(size_t index) {
     if (index >= size) {
         throw std::out_of_range("Index out of range");
     }
@@ -50,10 +127,10 @@ template <typename T> void Array<T *>::DeleteItem(size_t index) {
     size--;
 }
 
-template <typename T> void Array<T *>::PushItem(T *t) {
+void ArrayF::PushItem(Figure *t) {
     if (size >= capacity) {
         size_t new_capacity = capacity == 0 ? 1 : capacity * 2;
-        T **new_data = new T *[new_capacity];
+        Figure **new_data = new Figure *[new_capacity];
         for (size_t i = 0; i < size; ++i) {
             new_data[i] = data[i];
         }
@@ -67,6 +144,19 @@ template <typename T> void Array<T *>::PushItem(T *t) {
     data[size++] = t;
 }
 
-template <typename T> size_t Array<T *>::GetSize() const { return size; }
+void ArrayF::PopItem() {
+    if (size == 0) {
+        throw std::out_of_range("Array is empty");
+    }
+    delete data[size - 1];
+    size--;
+}
 
-template class Array<Figure *>;
+Figure *ArrayF::Back() const {
+    if (size == 0) {
+        throw std::out_of_range("Array is empty");
+    }
+    return data[size - 1];
+}
+
+size_t ArrayF::GetSize() const { return size; }

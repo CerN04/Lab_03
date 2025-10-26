@@ -14,7 +14,6 @@ TEST(PointTest, OutputOperator) {
     ASSERT_EQ(ss.str(), "(1, 2)");
 }
 
-// Для Array<Figure*> тестов
 class MockFigure : public Figure {
 public:
     Point geomCenter() const override { return {0.0, 0.0}; }
@@ -25,13 +24,13 @@ public:
     ~MockFigure() override {}
 };
 
-TEST(ArrayPointerTest, DefaultConstructor) {
-    Array<Figure *> arr;
+TEST(ArrayFTest, DefaultConstructor) {
+    ArrayF arr;
     ASSERT_EQ(arr.GetSize(), 0);
 }
 
-TEST(ArrayPointerTest, PushItem) {
-    Array<Figure *> arr;
+TEST(ArrayFTest, PushItem) {
+    ArrayF arr;
     MockFigure *mf1 = new MockFigure();
     arr.PushItem(mf1);
     ASSERT_EQ(arr.GetSize(), 1);
@@ -43,25 +42,25 @@ TEST(ArrayPointerTest, PushItem) {
     ASSERT_EQ(arr.GetItem(1), mf2);
 }
 
-TEST(ArrayPointerTest, GetSize) {
-    Array<Figure *> arr;
+TEST(ArrayFTest, GetSize) {
+    ArrayF arr;
     ASSERT_EQ(arr.GetSize(), 0);
     arr.PushItem(new MockFigure());
     ASSERT_EQ(arr.GetSize(), 1);
 }
 
-TEST(ArrayPointerTest, GetItem) {
+TEST(ArrayFTest, GetItem) {
     MockFigure *mf = new MockFigure();
-    Array<Figure *> arr;
+    ArrayF arr;
     arr.PushItem(mf);
     ASSERT_EQ(arr.GetItem(0), mf);
     ASSERT_THROW(arr.GetItem(99), std::out_of_range);
 }
 
-TEST(ArrayPointerTest, DeleteItem) {
+TEST(ArrayFTest, DeleteItem) {
     MockFigure *mf1 = new MockFigure();
     MockFigure *mf2 = new MockFigure();
-    Array<Figure *> arr;
+    ArrayF arr;
     arr.PushItem(mf1);
     arr.PushItem(mf2);
 
@@ -69,6 +68,67 @@ TEST(ArrayPointerTest, DeleteItem) {
     ASSERT_EQ(arr.GetSize(), 1);
     ASSERT_EQ(arr.GetItem(0), mf2);
     ASSERT_THROW(arr.DeleteItem(99), std::out_of_range);
+}
+
+TEST(ArrayFTest, ConstructorWithSize) {
+    ArrayF arr(5, new MockFigure());
+    ASSERT_EQ(arr.GetSize(), 5);
+    for (size_t i = 0; i < arr.GetSize(); ++i) {
+        ASSERT_NE(arr.GetItem(i), nullptr);
+    }
+}
+
+TEST(ArrayFTest, CopyConstructor) {
+    ArrayF arr1;
+    MockFigure *mf1 = new MockFigure();
+    arr1.PushItem(mf1);
+    ArrayF arr2 = arr1;
+    ASSERT_EQ(arr2.GetSize(), 1);
+    ASSERT_NE(arr2.GetItem(0), mf1);
+    ASSERT_NE(arr2.GetItem(0), nullptr);
+}
+
+TEST(ArrayFTest, CopyAssignment) {
+    ArrayF arr1;
+    MockFigure *mf1 = new MockFigure();
+    arr1.PushItem(mf1);
+    ArrayF arr2;
+    arr2 = arr1;
+    ASSERT_EQ(arr2.GetSize(), 1);
+    ASSERT_NE(arr2.GetItem(0), mf1);
+    ASSERT_NE(arr2.GetItem(0), nullptr);
+}
+
+TEST(ArrayFTest, Resize) {
+    ArrayF arr;
+    arr.PushItem(new MockFigure());
+    arr.PushItem(new MockFigure());
+    arr.Resize(1);
+    ASSERT_EQ(arr.GetSize(), 1);
+    ASSERT_THROW(arr.GetItem(1), std::out_of_range);
+    arr.Resize(3);
+    ASSERT_EQ(arr.GetSize(), 3);
+    ASSERT_NE(arr.GetItem(0), nullptr);
+    ASSERT_EQ(arr.GetItem(1), nullptr);
+    ASSERT_EQ(arr.GetItem(2), nullptr);
+}
+
+TEST(ArrayFTest, PopItem) {
+    ArrayF arr;
+    MockFigure *mf1 = new MockFigure();
+    arr.PushItem(mf1);
+    arr.PopItem();
+    ASSERT_EQ(arr.GetSize(), 0);
+    ASSERT_THROW(arr.PopItem(), std::out_of_range);
+}
+
+TEST(ArrayFTest, Back) {
+    ArrayF arr;
+    MockFigure *mf1 = new MockFigure();
+    arr.PushItem(mf1);
+    ASSERT_EQ(arr.Back(), mf1);
+    arr.PopItem();
+    ASSERT_THROW(arr.Back(), std::out_of_range);
 }
 
 TEST(PentagonTest, DefaultConstructor) {
