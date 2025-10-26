@@ -42,14 +42,7 @@ void Array::Resize(size_t new_size) {
     size = new_size;
 }
 
-Point Array::GetItem(size_t i) const {
-    if (i >= size) {
-        throw std::out_of_range("Index out of range");
-    }
-    return data[i];
-}
-
-Point &Array::GetItemRef(size_t i) {
+Point Array::operator[](size_t i) const {
     if (i >= size) {
         throw std::out_of_range("Index out of range");
     }

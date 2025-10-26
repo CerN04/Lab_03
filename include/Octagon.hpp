@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Array.hpp"
-
 #include "Figure.hpp"
 
 class Octagon : public Figure {

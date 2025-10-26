@@ -5,7 +5,9 @@
 #include "Hexagon.hpp"
 #include "Octagon.hpp"
 #include "Pentagon.hpp"
+#include "ArrayFigure.hpp"
 
+using ArrayF = ArrayFigure;
 
 TEST(PointTest, OutputOperator) {
     Point p = {1.0, 2.0};
@@ -16,17 +18,23 @@ TEST(PointTest, OutputOperator) {
 
 class MockFigure : public Figure {
 public:
+    static int alive_count;
     Point geomCenter() const override { return {0.0, 0.0}; }
     void print(std::ostream &os) const override { os << "MockFigure"; }
     void read(std::istream &is) override {}
     operator double() const override { return 0.0; }
     Figure *clone() const override { return new MockFigure(*this); }
-    ~MockFigure() override {}
+    ~MockFigure() override { alive_count--; }
+    MockFigure() { alive_count++; }
+    MockFigure(const MockFigure &other) { alive_count++; }
 };
+
+int MockFigure::alive_count = 0;
 
 TEST(ArrayFTest, DefaultConstructor) {
     ArrayF arr;
     ASSERT_EQ(arr.GetSize(), 0);
+    ASSERT_THROW(arr[0], std::out_of_range);
 }
 
 TEST(ArrayFTest, PushItem) {
@@ -34,12 +42,12 @@ TEST(ArrayFTest, PushItem) {
     MockFigure *mf1 = new MockFigure();
     arr.PushItem(mf1);
     ASSERT_EQ(arr.GetSize(), 1);
-    ASSERT_EQ(arr.GetItem(0), mf1);
+    ASSERT_EQ(arr[0], mf1);
 
     MockFigure *mf2 = new MockFigure();
     arr.PushItem(mf2);
     ASSERT_EQ(arr.GetSize(), 2);
-    ASSERT_EQ(arr.GetItem(1), mf2);
+    ASSERT_EQ(arr[1], mf2);
 }
 
 TEST(ArrayFTest, GetSize) {
@@ -47,35 +55,56 @@ TEST(ArrayFTest, GetSize) {
     ASSERT_EQ(arr.GetSize(), 0);
     arr.PushItem(new MockFigure());
     ASSERT_EQ(arr.GetSize(), 1);
+    arr.PushItem(new MockFigure());
+    ASSERT_EQ(arr.GetSize(), 2);
+    arr.PopItem();
+    ASSERT_EQ(arr.GetSize(), 1);
 }
 
 TEST(ArrayFTest, GetItem) {
     MockFigure *mf = new MockFigure();
     ArrayF arr;
     arr.PushItem(mf);
-    ASSERT_EQ(arr.GetItem(0), mf);
-    ASSERT_THROW(arr.GetItem(99), std::out_of_range);
+    ASSERT_EQ(arr[0], mf);
+    ASSERT_THROW(arr[99], std::out_of_range);
+}
+
+TEST(ArrayFTest, SetItem) {
+    ArrayF arr;
+    MockFigure *mf1 = new MockFigure();
+    MockFigure *mf2 = new MockFigure();
+    arr.PushItem(mf1);
+    ASSERT_EQ(arr[0], mf1);
+    arr.SetItem(0, mf2);
+    ASSERT_EQ(arr[0], mf2);
+    ASSERT_EQ(MockFigure::alive_count, 1);
 }
 
 TEST(ArrayFTest, DeleteItem) {
     MockFigure *mf1 = new MockFigure();
     MockFigure *mf2 = new MockFigure();
+    MockFigure *mf3 = new MockFigure();
     ArrayF arr;
     arr.PushItem(mf1);
     arr.PushItem(mf2);
+    arr.PushItem(mf3);
+    arr.DeleteItem(1);
+    ASSERT_EQ(arr.GetSize(), 2);
+    ASSERT_EQ(arr[0], mf1);
+    ASSERT_EQ(arr[1], mf3);
 
-    arr.DeleteItem(0);
-    ASSERT_EQ(arr.GetSize(), 1);
-    ASSERT_EQ(arr.GetItem(0), mf2);
     ASSERT_THROW(arr.DeleteItem(99), std::out_of_range);
 }
 
 TEST(ArrayFTest, ConstructorWithSize) {
-    ArrayF arr(5, new MockFigure());
-    ASSERT_EQ(arr.GetSize(), 5);
+    MockFigure *mf = new MockFigure();
+    ArrayF arr(3, mf);
+    ASSERT_EQ(arr.GetSize(), 3);
     for (size_t i = 0; i < arr.GetSize(); ++i) {
-        ASSERT_NE(arr.GetItem(i), nullptr);
+        ASSERT_NE(arr[i], nullptr);
+        ASSERT_NE(arr[i], mf);
     }
+    delete mf;
 }
 
 TEST(ArrayFTest, CopyConstructor) {
@@ -84,8 +113,8 @@ TEST(ArrayFTest, CopyConstructor) {
     arr1.PushItem(mf1);
     ArrayF arr2 = arr1;
     ASSERT_EQ(arr2.GetSize(), 1);
-    ASSERT_NE(arr2.GetItem(0), mf1);
-    ASSERT_NE(arr2.GetItem(0), nullptr);
+    ASSERT_NE(arr2[0], mf1);
+    ASSERT_NE(arr2[0], nullptr);
 }
 
 TEST(ArrayFTest, CopyAssignment) {
@@ -93,30 +122,34 @@ TEST(ArrayFTest, CopyAssignment) {
     MockFigure *mf1 = new MockFigure();
     arr1.PushItem(mf1);
     ArrayF arr2;
+    MockFigure *mf2 = new MockFigure();
+    arr2.PushItem(mf2);
     arr2 = arr1;
     ASSERT_EQ(arr2.GetSize(), 1);
-    ASSERT_NE(arr2.GetItem(0), mf1);
-    ASSERT_NE(arr2.GetItem(0), nullptr);
+    ASSERT_NE(arr2[0], mf1);
+    ASSERT_NE(arr2[0], nullptr);
 }
 
 TEST(ArrayFTest, Resize) {
     ArrayF arr;
-    arr.PushItem(new MockFigure());
-    arr.PushItem(new MockFigure());
+    MockFigure *mf1 = new MockFigure();
+    MockFigure *mf2 = new MockFigure();
+    arr.PushItem(mf1);
+    arr.PushItem(mf2);
     arr.Resize(1);
     ASSERT_EQ(arr.GetSize(), 1);
-    ASSERT_THROW(arr.GetItem(1), std::out_of_range);
+    ASSERT_THROW(arr[1], std::out_of_range);
     arr.Resize(3);
     ASSERT_EQ(arr.GetSize(), 3);
-    ASSERT_NE(arr.GetItem(0), nullptr);
-    ASSERT_EQ(arr.GetItem(1), nullptr);
-    ASSERT_EQ(arr.GetItem(2), nullptr);
+    ASSERT_EQ(arr[1], nullptr);
+    ASSERT_EQ(arr[2], nullptr);
 }
 
 TEST(ArrayFTest, PopItem) {
     ArrayF arr;
     MockFigure *mf1 = new MockFigure();
     arr.PushItem(mf1);
+
     arr.PopItem();
     ASSERT_EQ(arr.GetSize(), 0);
     ASSERT_THROW(arr.PopItem(), std::out_of_range);
@@ -126,16 +159,36 @@ TEST(ArrayFTest, Back) {
     ArrayF arr;
     MockFigure *mf1 = new MockFigure();
     arr.PushItem(mf1);
+
     ASSERT_EQ(arr.Back(), mf1);
     arr.PopItem();
     ASSERT_THROW(arr.Back(), std::out_of_range);
+}
+
+TEST(ArrayFTest, MemoryLeakCheck) {
+    ASSERT_EQ(MockFigure::alive_count, 0);
+    {
+        ArrayF arr;
+        MockFigure *mf1 = new MockFigure();
+        MockFigure *mf2 = new MockFigure();
+        arr.PushItem(mf1);
+        arr.PushItem(mf2);
+        ASSERT_EQ(MockFigure::alive_count, 2);
+
+        arr.PopItem();  // mf2 удалён
+        ASSERT_EQ(MockFigure::alive_count, 1);
+
+        arr.DeleteItem(0);  // mf1 удалён
+        ASSERT_EQ(MockFigure::alive_count, 0);
+    }
+    ASSERT_EQ(MockFigure::alive_count, 0);
 }
 
 TEST(PentagonTest, DefaultConstructor) {
     Pentagon p;
     std::stringstream ss;
     p.print(ss);
-    ASSERT_NE(ss.str().find("Vertex 1: 0 0"), std::string::npos);
+    ASSERT_NE(ss.str().find("Pentagon\nVertex 1: (0, 0)\n"), std::string::npos);
 }
 
 TEST(PentagonTest, Read) {
@@ -144,8 +197,8 @@ TEST(PentagonTest, Read) {
     p.read(iss);
     std::stringstream ss;
     p.print(ss);
-    ASSERT_NE(ss.str().find("Vertex 1: 10 10"), std::string::npos);
-    ASSERT_NE(ss.str().find("Vertex 5: 50 50"), std::string::npos);
+    ASSERT_NE(ss.str().find("Pentagon\nVertex 1: (10, 10)\n"), std::string::npos);
+    ASSERT_NE(ss.str().find("Vertex 5: (50, 50)\n"), std::string::npos);
 }
 
 TEST(PentagonTest, Print) {
@@ -154,7 +207,7 @@ TEST(PentagonTest, Print) {
     p.read(iss);
     std::stringstream ss;
     p.print(ss);
-    ASSERT_EQ(ss.str(), "Vertex 1: 1 1\nVertex 2: 2 2\nVertex 3: 3 3\nVertex 4: 4 4\nVertex 5: 5 5\n");
+    ASSERT_EQ(ss.str(), "Pentagon\nVertex 1: (1, 1)\nVertex 2: (2, 2)\nVertex 3: (3, 3)\nVertex 4: (4, 4)\nVertex 5: (5, 5)\n");
 }
 
 TEST(PentagonTest, GeomCenter) {
@@ -191,7 +244,7 @@ TEST(HexagonTest, DefaultConstructor) {
     Hexagon h;
     std::stringstream ss;
     h.print(ss);
-    ASSERT_NE(ss.str().find("Vertex 1: 0 0"), std::string::npos);
+    ASSERT_NE(ss.str().find("Hexagon\nVertex 1: (0, 0)\n"), std::string::npos);
 }
 
 TEST(HexagonTest, Read) {
@@ -200,8 +253,8 @@ TEST(HexagonTest, Read) {
     h.read(iss);
     std::stringstream ss;
     h.print(ss);
-    ASSERT_NE(ss.str().find("Vertex 1: 10 10"), std::string::npos);
-    ASSERT_NE(ss.str().find("Vertex 6: 60 60"), std::string::npos);
+    ASSERT_NE(ss.str().find("Hexagon\nVertex 1: (10, 10)\n"), std::string::npos);
+    ASSERT_NE(ss.str().find("Vertex 6: (60, 60)\n"), std::string::npos);
 }
 
 TEST(HexagonTest, Print) {
@@ -210,7 +263,7 @@ TEST(HexagonTest, Print) {
     h.read(iss);
     std::stringstream ss;
     h.print(ss);
-    ASSERT_EQ(ss.str(), "Vertex 1: 1 1\nVertex 2: 2 2\nVertex 3: 3 3\nVertex 4: 4 4\nVertex 5: 5 5\nVertex 6: 6 6\n");
+    ASSERT_EQ(ss.str(), "Hexagon\nVertex 1: (1, 1)\nVertex 2: (2, 2)\nVertex 3: (3, 3)\nVertex 4: (4, 4)\nVertex 5: (5, 5)\nVertex 6: (6, 6)\n");
 }
 
 TEST(HexagonTest, GeomCenter) {
@@ -247,7 +300,7 @@ TEST(OctagonTest, DefaultConstructor) {
     Octagon o;
     std::stringstream ss;
     o.print(ss);
-    ASSERT_NE(ss.str().find("Vertex 1: 0 0"), std::string::npos);
+    ASSERT_NE(ss.str().find("Octagon\nVertex 1: (0, 0)\n"), std::string::npos);
 }
 
 TEST(OctagonTest, Read) {
@@ -256,8 +309,8 @@ TEST(OctagonTest, Read) {
     o.read(iss);
     std::stringstream ss;
     o.print(ss);
-    ASSERT_NE(ss.str().find("Vertex 1: 10 10"), std::string::npos);
-    ASSERT_NE(ss.str().find("Vertex 8: 80 80"), std::string::npos);
+    ASSERT_NE(ss.str().find("Octagon\nVertex 1: (10, 10)\n"), std::string::npos);
+    ASSERT_NE(ss.str().find("Vertex 8: (80, 80)\n"), std::string::npos);
 }
 
 TEST(OctagonTest, Print) {
@@ -266,8 +319,7 @@ TEST(OctagonTest, Print) {
     o.read(iss);
     std::stringstream ss;
     o.print(ss);
-    ASSERT_EQ(ss.str(), "Vertex 1: 1 1\nVertex 2: 2 2\nVertex 3: 3 3\nVertex 4: 4 4\nVertex 5: 5 5\nVertex 6: 6 6\nVertex "
-                        "7: 7 7\nVertex 8: 8 8\n");
+    ASSERT_EQ(ss.str(), "Octagon\nVertex 1: (1, 1)\nVertex 2: (2, 2)\nVertex 3: (3, 3)\nVertex 4: (4, 4)\nVertex 5: (5, 5)\nVertex 6: (6, 6)\nVertex 7: (7, 7)\nVertex 8: (8, 8)\n");
 }
 
 TEST(OctagonTest, GeomCenter) {

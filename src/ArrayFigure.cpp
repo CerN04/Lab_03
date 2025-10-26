@@ -1,19 +1,19 @@
-#include "Array.hpp"
+#include "ArrayFigure.hpp"
 
 #include <stdexcept>
 
 #include "Figure.hpp"
 
-ArrayF::ArrayF() : size(0), data(nullptr), capacity(0) {}
+ArrayFigure::ArrayFigure() : size(0), data(nullptr), capacity(0) {}
 
-ArrayF::~ArrayF() noexcept {
+ArrayFigure::~ArrayFigure() noexcept {
     for (size_t i = 0; i < size; ++i) {
         delete data[i];
     }
     delete[] data;
 }
 
-ArrayF::ArrayF(const size_t &n, Figure *t) : size(n), capacity(n) {
+ArrayFigure::ArrayFigure(const size_t &n, Figure *t) : size(n), capacity(n) {
     data = new Figure *[capacity];
     for (size_t i = 0; i < size; ++i) {
         if (t != nullptr) {
@@ -26,20 +26,20 @@ ArrayF::ArrayF(const size_t &n, Figure *t) : size(n), capacity(n) {
 
 
 
-ArrayF::ArrayF(const ArrayF &other) : size(other.size), capacity(other.capacity) {
+ArrayFigure::ArrayFigure(const ArrayFigure &other) : size(other.size), capacity(other.capacity) {
     data = new Figure *[capacity];
     for (size_t i = 0; i < size; ++i) {
         data[i] = other.data[i]->clone();
     }
 }
 
-ArrayF::ArrayF(ArrayF &&other) noexcept : size(other.size), data(other.data), capacity(other.capacity) {
+ArrayFigure::ArrayFigure(ArrayFigure &&other) noexcept : size(other.size), data(other.data), capacity(other.capacity) {
     other.size = 0;
     other.data = nullptr;
     other.capacity = 0;
 }
 
-ArrayF &ArrayF::operator=(const ArrayF &other) {
+ArrayFigure &ArrayFigure::operator=(const ArrayFigure &other) {
     if (this == &other) {
         return *this;
     }
@@ -57,7 +57,7 @@ ArrayF &ArrayF::operator=(const ArrayF &other) {
     return *this;
 }
 
-ArrayF &ArrayF::operator=(ArrayF &&other) noexcept {
+ArrayFigure &ArrayFigure::operator=(ArrayFigure &&other) noexcept {
     if (this == &other) {
         return *this;
     }
@@ -76,7 +76,7 @@ ArrayF &ArrayF::operator=(ArrayF &&other) noexcept {
     return *this;
 }
 
-void ArrayF::Resize(size_t new_size) {
+void ArrayFigure::Resize(size_t new_size) {
     if (new_size == size) {
         return;
     }
@@ -101,14 +101,21 @@ void ArrayF::Resize(size_t new_size) {
     size = new_size;
 }
 
-Figure *ArrayF::GetItem(size_t i) const {
+Figure *ArrayFigure::operator[](size_t i) {
     if (i >= size) {
         throw std::out_of_range("Index out of range");
     }
     return data[i];
 }
 
-void ArrayF::SetItem(size_t index, Figure *value) {
+const Figure *ArrayFigure::operator[](size_t i) const {
+    if (i >= size) {
+        throw std::out_of_range("Index out of range");
+    }
+    return data[i];
+}
+
+void ArrayFigure::SetItem(size_t index, Figure *value) {
     if (index >= size) {
         throw std::out_of_range("Index out of range");
     }
@@ -116,18 +123,18 @@ void ArrayF::SetItem(size_t index, Figure *value) {
     data[index] = value;
 }
 
-void ArrayF::DeleteItem(size_t index) {
+void ArrayFigure::DeleteItem(size_t index) {
     if (index >= size) {
         throw std::out_of_range("Index out of range");
     }
     delete data[index];
-    for (size_t i = index; i < size - 1; ++i) {
+    for (size_t i = index; i + 1 < size; ++i) {
         data[i] = data[i + 1];
     }
     size--;
 }
 
-void ArrayF::PushItem(Figure *t) {
+void ArrayFigure::PushItem(Figure *t) {
     if (size >= capacity) {
         size_t new_capacity = capacity == 0 ? 1 : capacity * 2;
         Figure **new_data = new Figure *[new_capacity];
@@ -144,7 +151,7 @@ void ArrayF::PushItem(Figure *t) {
     data[size++] = t;
 }
 
-void ArrayF::PopItem() {
+void ArrayFigure::PopItem() {
     if (size == 0) {
         throw std::out_of_range("Array is empty");
     }
@@ -152,11 +159,11 @@ void ArrayF::PopItem() {
     size--;
 }
 
-Figure *ArrayF::Back() const {
+Figure *ArrayFigure::Back() const {
     if (size == 0) {
         throw std::out_of_range("Array is empty");
     }
     return data[size - 1];
 }
 
-size_t ArrayF::GetSize() const { return size; }
+size_t ArrayFigure::GetSize() const { return size; }

@@ -1,15 +1,18 @@
 #pragma once
 
-#include <ostream>
+#include <iostream>
 
 struct Point {
     double x;
     double y;
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Point &p) {
-    os << "(" << p.x << ", " << p.y << ")";
-    return os;
+inline std::ostream& operator<<(std::ostream &os, const Point &p) {
+    return os << "(" << p.x << ", " << p.y << ")";
+}
+
+inline std::istream& operator>>(std::istream &is, Point &p) {
+    return is >> p.x >> p.y;
 }
 
 class Figure {

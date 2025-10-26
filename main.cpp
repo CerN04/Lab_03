@@ -1,10 +1,10 @@
-#include "Array.hpp"
-
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <system_error>
 
+#include "Array.hpp"
+#include "ArrayFigure.hpp"
 #include "Figure.hpp"
 #include "Hexagon.hpp"
 #include "Octagon.hpp"
@@ -13,7 +13,7 @@
 int main() {
     try {
         std::cout << "Welcome to Lab3OOPFigureWorkerProgramm_V1!" << std::endl;
-        ArrayF spis;
+        ArrayFigure spis;
         int choice = 0;
         std::cout << "Select an action: " << std::endl;
         std::cout << "Choose an option:\n0. Exit\n1. Add pentagon\n2. Add hexagon\n3. Add oktagon\n4. Print all figures\n5. "
@@ -50,9 +50,9 @@ int main() {
                 std::cout << "All figures:" << std::endl;
                 for (size_t i = 0; i < spis.GetSize(); ++i) {
                     std::cout << "Figure " << i + 1 << "\n";
-                    spis.GetItem(i)->print(std::cout);
-                    std::cout << "Geometric center - " << (spis.GetItem(i))->geomCenter();
-                    std::cout << "; Area - " << static_cast<double>(*spis.GetItem(i));
+                    spis[i]->print(std::cout);
+                    std::cout << "Geometric center - " << (spis[i])->geomCenter();
+                    std::cout << "; Area - " << static_cast<double>(*spis[i]);
                     std::cout << std::endl;
                 }
                 break;
@@ -60,7 +60,7 @@ int main() {
             case 5: {
                 double total_area = 0.0;
                 for (size_t i = 0; i < spis.GetSize(); ++i) {
-                    total_area += static_cast<double>(*spis.GetItem(i));
+                    total_area += static_cast<double>(*spis[i]);
                 }
                 std::cout << "Total area of all figures: " << total_area << std::endl;
                 break;
